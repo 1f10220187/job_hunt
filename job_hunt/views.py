@@ -576,9 +576,6 @@ def get_webpage(start_url, max_pages, delay=3):
 
     return all_texts
 
-def generate_hash(input_url):
-    hashed_name = hashlib.md5(input_url.encode()).hexdigest()
-    return f"./vectorstore/{hashed_name}"
 
 def create_vectorstore(web_url,pdf_url, vectorstore_name,max_pages):
     
@@ -630,11 +627,18 @@ def append_to_vectorstore(univ_vector_path,username,vector_name,web_url=None,pdf
             print(f"{vectorstore_dir} はすでに存在します！上書きします。")
             shutil.rmtree(vectorstore_dir)  # 既存のベクトルストアを削除
         
-        # 2️⃣ 大学のベクトルストアを新しい場所にコピー
-        print(f"大学のベクトルストア {univ_vector_path} を {vectorstore_dir} にコピー中...")
-        shutil.copytree(univ_vector_path, vectorstore_dir)
-        print(f"コピーが完了しました！")
+        if os.path.exists(univ_vector_path):
+            print(f"大学のベクトルストア {univ_vector_path} を {vectorstore_dir} にコピー中...")
+            shutil.copytree(univ_vector_path, vectorstore_dir)
+            print(f"コピーが完了しました！")
+        else:
+            print("大学のベクトルストアを作成")
+            iniad_vector()
+            print(f"大学のベクトルストア {univ_vector_path} を {vectorstore_dir} にコピー中...")
+            shutil.copytree(univ_vector_path, vectorstore_dir)
+            print(f"コピーが完了しました！")
 
+ 
         # 3️⃣ 企業の新しいベクトルストアをロード
         vectorstore = Chroma(persist_directory=vectorstore_dir, embedding_function=embeddings)
 
@@ -696,75 +700,6 @@ def create_rag_chain(vectorstore,prompt=default_prompt):
         | llm
         | StrOutputParser()
     )
-
-def create_rag_chain_multiple(vectorstores):
-    print("RAGチェーン作成中（複数ベクトルストア対応）")
-
-    # 複数のベクトルストアからリトリーバーを作成
-    retrievers = [store.as_retriever(search_kwargs={"k": 10}) for store in vectorstores]
-
-    # 検索結果を統合する関数
-    def combined_retrieval(question):
-        all_contexts = []
-        for retriever in retrievers:
-            docs = retriever.get_relevant_documents(question)
-            context = "\n\n".join([doc.page_content for doc in docs])
-            all_contexts.append(context)
-        return "\n\n".join(all_contexts)
-
-    # プロンプト
-    prompt = """あなたはとても優秀な就職活動のアシスタントです！
-    質問に答えるために、検索された文脈の以下の部分を使用してください。
-    答えがわからない場合は、わからないと答えましょう。
-    回答は長すぎてはいけませんがなるべく親身に回答してあげましょう。
-
-    文脈:
-    {context}
-
-    質問:
-    {question}
-    """
-    prompt_template = PromptTemplate.from_template(prompt)
-
-    # チェーン作成
-    return (
-        {"context": combined_retrieval, "question": RunnablePassthrough()}
-        | prompt_template
-        | llm
-        | StrOutputParser()
-    )
-
-def analyze_question(question):# 高い信頼性のある回答を生成
-    prompt = f"""
-    質問: "{question}"
-    この質問を解答するために必要な情報をそれぞれ以下の2つの情報源で検索するための具体的な質問文を考えてください。
-    検索はretriever.get_relevant_documents()を用いて行うことを考慮してください
-    1. 企業の情報がまとめられたベクトルストア
-    2. 大学の情報がまとめられたベクトルストア
-
-    企業の情報の中には大学に関する情報はほとんどないことと、大学の情報の中には企業の情報がほとんどないことに留意してください。
-    例えば大学の情報を探索する質問文で企業名を入れても情報はありません。
-
-    それぞれの検索クエリを以下の形式で出力してください：
-    - [企業のストア情報を検索する質問文]
-    - [大学のストアから必要な情報を検索する質問文]
-    """
-    query=llm.invoke(prompt)
-    query=str(query)
-    return query
-
-# 正規表現でクエリ部分を抽出
-def extract_queries(content):
-    queries = {}
-    company_match = re.search(r"- 企業情報クエリ: \"(.*?)\"", content)
-    university_match = re.search(r"- 大学情報クエリ: \"(.*?)\"", content)
-    
-    if company_match:
-        queries["企業情報クエリ"] = company_match.group(1)
-    if university_match:
-        queries["大学情報クエリ"] = university_match.group(1)
-    
-    return queries
 
 
 ###################################################################################################################################
