@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}詳細ページ{% endblock %}
+
+{% block content %}
+    <section class="container justify-content-center">
+        <div class="row">
+            <div class="col-md-12">
+                <ul class="nav nav-tabs" id="myTab2" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="pr-correction-tab" data-bs-toggle="tab" href="#pr-correction" role="tab" aria-controls="pr-correction" aria-selected="true">自己pr</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="effort-correction-tab" data-bs-toggle="tab" href="#effort-correction" role="tab" aria-controls="effort-correction" aria-selected="false">ガクチカ</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="tab-content">
+                <div class="col-md-12 tab-pane active" id="pr-correction">
+                    <form method="post" action="{% url 'pr_correction' %}" class="mt-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">自己prの添削を実行</button>
+                    </form>
+                    <div class="card">
+                        <div class="card-body rounded bg-success bg-gradient text-white">
+                            <p class="card-text">{{ pr_check }}</p>
+                        </div>
+                    </div>    
+                </div>
+                <div class="col-md-12 tab-pane" id="effort-correction">
+                    <form method="post" action="{% url 'effort_correction' %}" class="mt-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">ガクチカの診断を実行</button>
+                    </form>
+                    <div class="card">
+                        <div class="card-body rounded bg-success bg-gradient text-white">
+                            <p class="card-text">{{ effort_check }}</p>
+                        </div>
+                    </div>   
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+

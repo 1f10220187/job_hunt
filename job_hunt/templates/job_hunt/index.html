@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Top page{% endblock %}
+
+{% block content %}
+<section class="container my-5">
+    <h2 class="text-center mb-4">企業一覧ページ</h2>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div>
+                <a href="{% url 'pr_correction' %}" class="text-dark">添削ページ</a>
+                <a href="{% url 'iniad' %}" class="text-dark">INIADベクトルストア再生成</a>
+            </div>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">新しい企業を追加する</h3>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">企業の名前:</label>
+                            <input type="text" id="name" name="name" class="form-control" placeholder="企業名を入力" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="web_url" class="form-label">企業のホームページのURL:</label>
+                            <input type="url" id="web_url" name="web_url" class="form-control" placeholder="https://example.com">
+                            <small class="form-text text-muted">推奨: 採用ページのURL</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="pdf_url" class="form-label">企業情報の載ったPDFサイトのURL:</label>
+                            <input type="url" id="pdf_url" name="pdf_url" class="form-control" placeholder="https://example.com/report.pdf">
+                            <small class="form-text text-muted">例: IRや経営計画書など</small>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success w-100">作成</button>
+                        </div>
+                    </form>
+                </div>
+                <div>
+                    {% if error_message %}
+                        <div class="alert alert-danger">{{ error_message }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-10 mb-3">
+            {% for company in company_list %}
+            <div class="mb-3 mt-1">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body bg-info text-white rounded ">
+                        <h3 class="card-title test-center"><a href="{% url 'detail' company.pk %}" class="text-white text-decoration-none">{{ company.name }}</a></h3>
+                        <p class="card-text">{{ company.description }}</p>
+                        <form action="{% url 'delete' company.pk %}" method="post" onsubmit="return confirm('本当に削除しますか？');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">削除</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}

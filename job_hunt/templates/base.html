@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+        <script src="{% static 'css/chat.js' %}"></script>
+        <title>Support your jub hunt</title>
+    </head>
+    <body>
+        <header class="bg-success">
+            <div class="container">
+                <div class="pt-3 pb-1 mb-2 text-white d-flex justify-content-between align-items-center flex-wrap">
+                    <h1 class="display-4"><a href="{% url 'index' %}" class="text-white text-center">就活支援アプリ</a></h1>
+                    {% if user.is_authenticated %}
+                        <div>
+                            <p class="text-right">ようこそ{{ user.username }}さん</p>
+                        </div>
+                        <div>
+                            {% if request.path == '/' %}
+                                <a href="{% url 'profile' %}" class="text-white">プロフィール編集</a>
+                            {% else %}
+                                <a href="{% url 'index' %}" class="text-white">Topへ</a>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-light">ログアウト</button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div>
+                            <a href="{% url 'login' %}" class="btn btn-light">ログイン</a>
+                            <a href="{% url 'signup' %}" class="btn btn-light">サインアップ</a>
+                        </div>
+                    {% endif %}
+                    <!-- <a href="{% url 'iniad' %}">INIADベクトルストア再生成</a> -->
+                </div>
+            </div>
+        </header>
+        {% block content %}
+        {% endblock %}
+        <div class="text-right"  style="position: fixed; bottom: 20px; right: 20px;">
+            <a href="#"><i class="bi bi-arrow-up-circle" style="font-size: 2rem;"></i></a>
+        </div>
+    
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+      </body>
+</html>

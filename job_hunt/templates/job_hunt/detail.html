@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}詳細ページ{% endblock %}
+
+{% block content %}
+    <section class="container justify-content-center">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1><strong>{{ company.name }}</strong></h1>
+            </div>
+            <!-- タブのナビゲーション -->
+             <div class="col-md-12">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="chat-tab" data-bs-toggle="tab" href="#chat" role="tab" aria-controls="chat" aria-selected="true">チャット</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="diagnosis-tab" data-bs-toggle="tab" href="#diagnosis" role="tab" aria-controls="diagnosis" aria-selected="false">相性</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pr-tab" data-bs-toggle="tab" href="#pr-check" role="tab" aria-controls="pr-check" aria-selected="false">自己pr</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="effort-tab" data-bs-toggle="tab" href="#effort-check" role="tab" aria-controls="effort-check" aria-selected="false">ガクチカ</button>
+                    </li>
+                </ul>
+             </div>
+            <div class="tab-content">
+                <div class="col-md-12 tab-pane active" id="chat">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="card-title text-center">チャット</h3>
+                            <div class="chat-container pre-scrollable mb-4 overflow-auto" id="area">
+                                {% for chat in chat_logs %}
+                                <div class="d-flex justify-content-end mb-2">
+                                    <div class="chat-bubble question card text-left">
+                                        <p class="chat-text">{{ chat.question }}</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-start mb-2">
+                                    <div class="chat-bubble answer card">
+                                        <p class="chat-text m-3">{{ chat.answer }}</p>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                    <p>まだチャット履歴はありません。</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div>
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="form-check text-right">
+                                    <input class="form-check-input" type="checkbox" id="include_user_info" name="include_user_info">
+                                    <label class="form-check-label" for="include_user_info">
+                                        入力にユーザー情報を含める
+                                    </label>
+                                </div>
+                                <div class="input-group mb-3">
+                                    <textarea id="question" name="question" class="form-control" rows="2" placeholder="質問を入力してください" required></textarea>
+                                    <button type="submit" class="btn btn-primary">送信</button>     
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 tab-pane" id="diagnosis">
+                    <form method="POST" action="{% url 'matched' company.pk %}" class="mt-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">診断を実行</button>
+                    </form>
+                    <div class="card my-3">
+                        <div class="card-body rounded bg-success bg-gradient text-white">
+                            <p class="card-text">{{ company.matched }}</p>
+                        </div>
+                    </div>                
+                </div>
+                <div class="col-md-12 tab-pane" id="pr-check">
+                    <form method="post" action="{% url 'pr_check' company.pk %}" class="mt-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">診断を実行</button>
+                    </form>
+                    <div class="card my-3">
+                        <div class="card-body rounded bg-success bg-gradient text-white">
+                            <p class="card-text">{{ company.pr_check }}</p>
+                        </div>
+                    </div>    
+                </div>
+                <div class="col-md-12 tab-pane" id="effort-check">
+                    <form method="post" action="{% url 'effort_check' company.pk %}" class="mt-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">診断を実行</button>
+                    </form>
+                    <div class="card my-3">
+                        <div class="card-body rounded bg-success bg-gradient text-white">
+                            <p class="card-text">{{ company.effort_check }}</p>
+                        </div>
+                    </div>   
+                </div>
+            </div>
+        </div>
+        <!-- <a href="{% url 'iniad' %}" class="btn btn-primary">INIADベクトルストア作成</a> -->
+    </section>
+{% endblock %}
+

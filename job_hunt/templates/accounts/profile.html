@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}プロフィール{% endblock %}
+
+{% block content %}
+<section class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">プロフィール</h1>
+            <p class="text-center">ユーザー名:<strong>{{ user.username }}</strong></p>
+        </div>
+        <div class="col-md-8">
+            <form method="post" enctype="multipart/form-data" class="border p-4 rounded shadow-sm bg-white">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="want" class="form-label">会社選びの軸</label>
+                    <textarea id="want" name="want" class="form-control" rows="3" placeholder="例: 福利厚生、ワークライフバランス、携わりたい業務内容など">{{ want }}</textarea>
+                </div>
+                <div>
+                    <label for="avoid" class="form-label">避けたい仕事内容や環境</label>
+                    <textarea id="avoid" name="avoid" class="form-control" rows="3" placeholder="例: 夜勤や長時間残業が多い仕事、単調なデータ入力作業、競争が激しい職場環境は避けたい">{{ avoid }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="career" class="form-label">歩みたいキャリアプラン</label>
+                    <textarea id="career" name="career" rows="3" class="form-control" placeholder="例: フルスタックエンジニアとして成長し、5年以内にプロジェクトリーダーとして活躍したい">{{ career }}</textarea>
+                </div>
+                <div class="mb-4">
+                    <p class="form-label fw-bold">科目群</p>
+                    {% for subject, label in subjects_list %}
+                    <div class="form-check">
+                        <input 
+                            type="checkbox" 
+                            id="{{ label }}" 
+                            name="Subject" 
+                            value="{{ subject }}" 
+                            class="form-check-input"
+                            {% if subject in subjects %}checked{% endif %}>
+                        <label for="{{ label }}" class="form-check-label">{{ subject }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div>
+                    <label for="skill" class="form-label">持っているスキルや資格</label>
+                    <textarea id="skill" name="skill" rows="2" class="form-control" placeholder="例: 基本情報技術者、TOEIC 750点、python、Django...">{{ skill }}</textarea>
+                </div>
+                <div>
+                    <label for="mbti" class="form-label">あなたのMBTIタイプを選択してください</label>
+                    <select id="mbti" name="mbti" class="form-select">
+                        <option value="">選択してください</option>
+                        {% for mbti_type in mbti_list %}
+                        <option value="{{ mbti_type }}" {% if mbti == mbti_type %}selected="selected"{% endif %}>{{ mbti_type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="pr" class="form-label">自己pr</label>
+                    <textarea id="pr" name="pr" rows="6" class="form-control">{{ pr }}</textarea>
+                </div>
+                <div>
+                    <label for="effort" class="form-label">ガクチカ</label>
+                    <textarea id="effort" name="effort" class="form-control" rows="6">{{ effort }}</textarea>
+                </div>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success px-5">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="mt-2 mb-2 text-right">
+        <a href="{% url 'index' %}" class="btn btn-primary">Topへ</a>
+    </div>
+</section>
+{% endblock %}
