@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
@@ -256,13 +256,17 @@ def detail(request,pk):
             rag_chain = create_rag_chain(company_vectorstore)
             answer = rag_chain.invoke(question)
 
-        ChatLog.objects.create(
+        chat = ChatLog.objects.create(
             user=request.user,
             company=company,
             question=question,
             answer=answer,
         )
-        return redirect('detail',pk=company.pk)
+        return JsonResponse({
+        'question': chat.question,
+        'answer': chat.answer,
+        })
+        # return redirect('detail',pk=company.pk)
 
     return render(request, "job_hunt/detail.html", {"company": company,"chat_logs":chat_logs})
 
