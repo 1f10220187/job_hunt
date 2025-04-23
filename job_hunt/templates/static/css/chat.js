@@ -42,9 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('chat-form');
-    if (!form) return;  // 念のため確認
+    if (!form) return;
   
-    form.addEventListener('submit', async function(event) {
+    form.addEventListener('submit', async function (event) {
       event.preventDefault();
   
       const input = document.getElementById('question');
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
       const chatArea = document.getElementById('area');
   
-      // 質問を表示
+      // ユーザーの質問を表示
       const userDiv = document.createElement('div');
       userDiv.classList.add('d-flex', 'justify-content-end', 'mb-2');
       userDiv.innerHTML = `
@@ -64,35 +64,46 @@ document.addEventListener('DOMContentLoaded', function() {
       chatArea.appendChild(userDiv);
       scrollToBottom();
   
-      // 考え中...を表示
-      const aiDiv = document.createElement('div');
-      aiDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
-      aiDiv.innerHTML = `
-        <div class="chat-bubble answer card">
-          <p class="chat-text m-3" id="pending-answer">考え中...</p>
-        </div>
-      `;
-      chatArea.appendChild(aiDiv);
-      scrollToBottom();
+      try {
+        const response = await fetch(window.location.href, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            question: question,
+            include_user_info: document.getElementById('include_user_info').checked
+          })
+        });
   
-      // Djangoに非同期送信
-      const response = await fetch('', {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          question: question,
-          include_user_info: document.getElementById('include_user_info').checked
-        })
-      });
-        const data = await response.json();  // ← JSONで受け取る
-        const answerElement = document.getElementById('pending-answer');
-        if (answerElement && data.answer) {
-        answerElement.textContent = data.answer;
+        if (!response.ok) throw new Error(`HTTPエラー: ${response.status}`);
+        const data = await response.json();
+  
+        // 回答が来たらそのまま吹き出し作成
+        const aiDiv = document.createElement('div');
+        aiDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
+        aiDiv.innerHTML = `
+          <div class="chat-bubble answer card">
+            <p class="chat-text m-3">${data.answer || data.error || 'エラーが発生しました。'}</p>
+          </div>
+        `;
+        chatArea.appendChild(aiDiv);
         scrollToBottom();
-        }
+  
+      } catch (err) {
+        console.error("Fetchエラー:", err);
+  
+        const aiDiv = document.createElement('div');
+        aiDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
+        aiDiv.innerHTML = `
+          <div class="chat-bubble answer card">
+            <p class="chat-text m-3">通信エラーが発生しました。</p>
+          </div>
+        `;
+        chatArea.appendChild(aiDiv);
+        scrollToBottom();
+      }
     });
   });
   

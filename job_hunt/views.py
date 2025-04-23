@@ -30,6 +30,7 @@ import re
 import shutil
 from langchain.prompts import ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate, PromptTemplate
 from langchain.schema import SystemMessage
+import traceback
 
 #環境変数呼び出し
 openai_api_key = settings.OPENAI_API_KEY
@@ -243,31 +244,34 @@ def detail(request,pk):
     company_vectorstore_path = company.vectorstore_path
 
     # ベクトルストアをロード
-    company_vectorstore = Chroma(persist_directory=company_vectorstore_path, embedding_function=embeddings)
+    try:
+        company_vectorstore = Chroma(persist_directory=company_vectorstore_path, embedding_function=embeddings)
 
-    if request.method == 'POST':
-        question = request.POST.get('question')
-        check = request.POST.get('include_user_info')
-        if check:
-            prompt = make_detail_prompt(request)
-            rag_chain = create_rag_chain(company_vectorstore,prompt=prompt)
-            answer = rag_chain.invoke(question)
-        else:
-            rag_chain = create_rag_chain(company_vectorstore)
-            answer = rag_chain.invoke(question)
+        if request.method == 'POST':
+            question = request.POST.get('question')
+            check = request.POST.get('include_user_info')
+            if check:
+                prompt = make_detail_prompt(request)
+                rag_chain = create_rag_chain(company_vectorstore,prompt=prompt)
+                answer = rag_chain.invoke(question)
+            else:
+                rag_chain = create_rag_chain(company_vectorstore)
+                answer = rag_chain.invoke(question)
 
-        chat = ChatLog.objects.create(
-            user=request.user,
-            company=company,
-            question=question,
-            answer=answer,
-        )
-        return JsonResponse({
-        'question': chat.question,
-        'answer': chat.answer,
-        })
-        # return redirect('detail',pk=company.pk)
-
+            chat = ChatLog.objects.create(
+                user=request.user,
+                company=company,
+                question=question,
+                answer=answer,
+            )
+            return JsonResponse({
+            'question': chat.question,
+            'answer': chat.answer,
+            })
+            # return redirect('detail',pk=company.pk)
+    except:
+        print(traceback.format_exc())
+        return JsonResponse({'error': '内部エラーが発生しました'}, status=500)
     return render(request, "job_hunt/detail.html", {"company": company,"chat_logs":chat_logs})
 
 @login_required
