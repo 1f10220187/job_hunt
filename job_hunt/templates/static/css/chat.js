@@ -48,12 +48,13 @@ document.addEventListener('DOMContentLoaded', function() {
       event.preventDefault();
   
       const input = document.getElementById('question');
-      const question = input.value;
+      const question = input.value.trim();
+      if (!question) return;
       input.value = '';
   
       const chatArea = document.getElementById('area');
   
-      // ユーザーの質問を表示
+      // 質問を表示
       const userDiv = document.createElement('div');
       userDiv.classList.add('d-flex', 'justify-content-end', 'mb-2');
       userDiv.innerHTML = `
@@ -62,6 +63,18 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       `;
       chatArea.appendChild(userDiv);
+      scrollToBottom();
+  
+      // 考え中... を表示（あとで削除する用にidをつける）
+      const thinkingDiv = document.createElement('div');
+      thinkingDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
+      thinkingDiv.setAttribute('id', 'pending-response');
+      thinkingDiv.innerHTML = `
+        <div class="chat-bubble answer card">
+          <p class="chat-text m-3">考え中...</p>
+        </div>
+      `;
+      chatArea.appendChild(thinkingDiv);
       scrollToBottom();
   
       try {
@@ -80,7 +93,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!response.ok) throw new Error(`HTTPエラー: ${response.status}`);
         const data = await response.json();
   
-        // 回答が来たらそのまま吹き出し作成
+        // 考え中...を削除
+        const pending = document.getElementById('pending-response');
+        if (pending) pending.remove();
+  
+        // 回答を表示
         const aiDiv = document.createElement('div');
         aiDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
         aiDiv.innerHTML = `
@@ -93,6 +110,9 @@ document.addEventListener('DOMContentLoaded', function() {
   
       } catch (err) {
         console.error("Fetchエラー:", err);
+  
+        const pending = document.getElementById('pending-response');
+        if (pending) pending.remove();
   
         const aiDiv = document.createElement('div');
         aiDiv.classList.add('d-flex', 'justify-content-start', 'mb-2');
